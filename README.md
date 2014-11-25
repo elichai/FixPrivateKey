@@ -1,4 +1,8 @@
 FixPrivateKey
 =============
 
-Fixing WIF(Wallet Import Format) private key by trying to replace any letter in it with all the letters in the base 58, and check if the checksum correct
+This tool is used to replace every single character in a WIF private key, and then check if the checksum is correct.
+
+Usage
+----------------
+$ python FixAndCheckPrivateKey.py address
