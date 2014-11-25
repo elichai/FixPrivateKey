@@ -6,6 +6,7 @@ import hashlib
 import string
 import argparse
 import logging
+import sys
 
 possible = string.lowercase + string.uppercase + '123456789'
 possible = possible.translate(None, 'OIl')
@@ -26,18 +27,30 @@ def query_yes_no(question, true='yes', false='no'):
                   "' (or '" + true[0] + "' or '" + false[0] + "').\n"
 
 
+def swap_letters(address):
+    address_list = list(address)
+    for i in range(1, len(address_list) - 1):
+        address_tmp = list(address_list)
+        tmp = address_tmp[i + 1]
+        address_tmp[i + 1] = address_tmp[i]
+        address_tmp[i] = tmp
+        logging.debug("Swap test: " + "".join(address_tmp))
+        if check("".join(address_tmp)):
+            return "".join(address_tmp)
+    return None
+
+
 def check_duplicated_letters(address):
     count = 0
-    retn = None
+    retrn = None
     address_list = list(address)
     for i in range(1, len(address_list)):
         if address_list[i] == address_list[i - 1]:
             count += 1
             if count > 1:
                 return None
-            retn = i
-
-    return retn
+            retrn = i
+    return retrn
 
 
 def check(key):
@@ -67,11 +80,13 @@ def change_letter(address, letters=1, start=1):
                     logging.info("".join(address_list))
                 else:
                     return "Canceled by user"
-            elif not query_yes_no("Your privkey is 1 char too long, do you want to remove the last one?"):
+            elif not query_yes_no("Your privkey is 1 char too long,"
+                                  " do you want to remove the last one?"):
                 return "Canceled by user"
 
         elif len(address) == 51:
-            if not query_yes_no("Your privkey is 1 char short, do you want to try generate the last one?"):
+            if not query_yes_no("Your privkey is 1 char short,"
+                                " do you want to try generate the last one?"):
                 return "Canceled by user"
 
     elif not 50 >= len(address) >= 52:
@@ -80,16 +95,19 @@ def change_letter(address, letters=1, start=1):
 
     else:  # Not compressed key - supposed to be 51 bytes.
         if len(address) == 52:
-            if not query_yes_no("Your privkey is 1 char too long, do you want to remove the last one?"):
+            if not query_yes_no("Your privkey is 1 char too long,"
+                                " do you want to remove the last one?"):
                 return "Canceled by user"
             else:
                 address_list.pop()
                 logging.info("removed last char, new privkey: " + address)
         if len(address) == 50:
-            if not query_yes_no("Your privkey is 1 char short, do you want to try generate the last one?"):
+            if not query_yes_no("Your privkey is 1 char short,"
+                                " do you want to try generate the last one?"):
                 return "Canceled by user"
             address += '1'
-            logging.info("added char to the end(it will try generating it), new privkey: " + address)
+            logging.info("added char to the end(it will try generating it),"
+                         " new privkey: " + address)
 
     if check(address):
         logging.info("The address was 100% right")
@@ -129,6 +147,10 @@ parser.add_argument('--results', action='store', type=int,
 parser.add_argument('-v', action='count',
                     dest='verbose',
                     help='Verbose - use `-v` for level 1 and `-vv` for level 2')
+parser.add_argument('--swap', action='store_true',
+                    dest='swap',
+                    help='Check if two consecutive letters got misplaced.'
+                         ' By swapping any pair of letters in the private key')
 args = parser.parse_args()
 
 if args.verbose == 1:
@@ -136,4 +158,9 @@ if args.verbose == 1:
 elif args.verbose >= 2:
     logging.basicConfig(level=logging.DEBUG)
 
+if args.swap:
+    result = swap_letters(args.address)
+    if result is not None:
+        print result
+        sys.exit(0)
 print change_letter(args.address, args.letters, 1)
