@@ -5,10 +5,12 @@ import bitcoin.base58
 import hashlib
 import string
 import argparse
+import logging
 
 possible = string.lowercase + string.uppercase + '123456789'
 possible = possible.translate(None, 'OIl')
 result = []
+chk = False
 
 
 def query_yes_no(question):
@@ -33,17 +35,22 @@ def check(key):
 
 
 def change_letter(address, letters, start):
+    global chk
     if len(address) < 50 or len(address) > 52:
+        logging.info("the address is " + len(address) + " bytes long")
         return 'The address is too long\short'
-
     if len(address) == 52:
-        if address[1] is 'L' or 'K':
+        if address[0] in ('L', 'K'):
             pass
+            if not chk:
+                logging.info("detected Compressed private key")
+                chk = True
+
         elif not query_yes_no("Your privkey is 1 char too long, do you want to remove the last one?"):
             return "Canceled by user"
         else:
             address = address[:-1]
-        print 'yep'
+            logging.info("removed last char, new privkey: " + address)
 
     if len(address) == 50:
         if not query_yes_no("Your privkey is 1 char short, do you want to try generate the last one?"):
@@ -51,6 +58,7 @@ def change_letter(address, letters, start):
         address += '1'
 
     if check(address):
+        logging.info("The address was 100% right")
         return address
 
     address_list = list(address)
@@ -59,6 +67,7 @@ def change_letter(address, letters, start):
             address_temp = list(address_list)
             address_temp[i] = c
             address_end = "".join(address_temp)
+            logging.debug("Checking this address: " + address_end)
             if check(address_end):
                 if args.results == 1:
                     return address_end
@@ -66,7 +75,7 @@ def change_letter(address, letters, start):
                 print '\n' + address_end
                 args.results -= 1
             if letters > 1:
-                if len(change_letter(address_end, letters - 1, start + 1)) == 51:
+                if 53 > len(change_letter(address_end, letters - 1, start + 1)) > 50:
                     return address_end
     if not result:
         return '\nCouldn\'t find any result'
@@ -84,6 +93,14 @@ parser.add_argument('--results', action='store', type=int,
                     default=1,
                     dest='results',
                     help="Specify number of results")
+parser.add_argument('-v', action='count',
+                    dest='verbose',
+                    help='Verbose - use `-v` for level 1 and `-vv` for level 2')
 args = parser.parse_args()
+
+if args.verbose == 1:
+    logging.basicConfig(level=logging.INFO)
+elif args.verbose > 2:
+    logging.basicConfig(level=logging.DEBUG)
 
 print change_letter(args.address, args.letters, 1)
