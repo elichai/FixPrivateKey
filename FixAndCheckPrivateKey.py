@@ -22,7 +22,7 @@ def check(key):
 
 
 def change_letter(address, letters, start):
-    if len(address) != 51:
+    if 52 < len(address) < 51:
         return 'The address is too long\short'
     if check(address):
         return address
