@@ -13,15 +13,31 @@ result = []
 chk = False
 
 
-def query_yes_no(question):
-    valid = {"yes": True, "y": True, "no": False, "n": False}
+def query_yes_no(question, true='yes', false='no'):
     while True:
-        print (question + " [y/n]"),
+        print (question + ' [' + true[0] + '/' + false[0] + ']'),
         choice = raw_input().lower()
-        if choice in valid:
-            return valid[choice]
+        if choice in (true, true[0]):
+            return True
+        if choice in (false, false[0]):
+            return False
         else:
-            print "Please respond with 'yes' or 'no' (or 'y' or 'n').\n"
+            print "Please respond with '" + true + "' or '" + false +\
+                  "' (or '" + true[0] + "' or '" + false[0] + "').\n"
+
+
+def check_duplicated_letters(address):
+    count = 0
+    retn = None
+    address_list = list(address)
+    for i in range(1, len(address_list)):
+        if address_list[i] == address_list[i - 1]:
+            count += 1
+            if count > 1:
+                return None
+            retn = i
+
+    return retn
 
 
 def check(key):
@@ -34,34 +50,51 @@ def check(key):
     return False
 
 
-def change_letter(address, letters, start):
+def change_letter(address, letters=1, start=1):
     global chk
-    if len(address) < 50 or len(address) > 52:
+    address_list = list(address)
+    if address[0] in ('L', 'K'):  # Compressed Key - supposed to be 52 bytes.
+        if not chk:
+            logging.info("detected Compressed private key")
+            chk = True
+
+        if len(address) == 53:
+            indx = check_duplicated_letters(address)
+            if indx is not None:
+                if query_yes_no("Your privkey is 1 char too long, remove duplicated letters"
+                                " or remove last letter?", "repeat", "last"):
+                    address_list.pop(indx)
+                    logging.info("".join(address_list))
+                else:
+                    return "Canceled by user"
+            elif not query_yes_no("Your privkey is 1 char too long, do you want to remove the last one?"):
+                return "Canceled by user"
+
+        elif len(address) == 51:
+            if not query_yes_no("Your privkey is 1 char short, do you want to try generate the last one?"):
+                return "Canceled by user"
+
+    elif not 50 >= len(address) >= 52:
         logging.info("the address is " + len(address) + " bytes long")
         return 'The address is too long\short'
-    if len(address) == 52:
-        if address[0] in ('L', 'K'):
-            pass
-            if not chk:
-                logging.info("detected Compressed private key")
-                chk = True
 
-        elif not query_yes_no("Your privkey is 1 char too long, do you want to remove the last one?"):
-            return "Canceled by user"
-        else:
-            address = address[:-1]
-            logging.info("removed last char, new privkey: " + address)
-
-    if len(address) == 50:
-        if not query_yes_no("Your privkey is 1 char short, do you want to try generate the last one?"):
-            return "Canceled by user"
-        address += '1'
+    else:  # Not compressed key - supposed to be 51 bytes.
+        if len(address) == 52:
+            if not query_yes_no("Your privkey is 1 char too long, do you want to remove the last one?"):
+                return "Canceled by user"
+            else:
+                address_list.pop()
+                logging.info("removed last char, new privkey: " + address)
+        if len(address) == 50:
+            if not query_yes_no("Your privkey is 1 char short, do you want to try generate the last one?"):
+                return "Canceled by user"
+            address += '1'
+            logging.info("added char to the end(it will try generating it), new privkey: " + address)
 
     if check(address):
         logging.info("The address was 100% right")
         return address
 
-    address_list = list(address)
     for i in range(start, len(address_list)):
         for c in possible:
             address_temp = list(address_list)
@@ -100,7 +133,7 @@ args = parser.parse_args()
 
 if args.verbose == 1:
     logging.basicConfig(level=logging.INFO)
-elif args.verbose > 2:
+elif args.verbose >= 2:
     logging.basicConfig(level=logging.DEBUG)
 
 print change_letter(args.address, args.letters, 1)

@@ -10,7 +10,7 @@ $ python FixAndCheckPrivateKey.py <address>
 ```
 You can add `--letters LETTERS` option to try replacing more than 1 letter.
 And you can add `--results RESULTS` option to stop trying after more than 1 letter.
-Install Petter Todd's library
+Install Peter Todd's library
 ----------------
 ```
 sudo apt-get install libssl-dev
