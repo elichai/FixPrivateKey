@@ -5,4 +5,6 @@ This tool is used to replace every single character in a WIF private key, and th
 
 Usage
 ----------------
+```
 $ python FixAndCheckPrivateKey.py address
+```

@@ -1,0 +1,3 @@
+[submodule "python-bitcoinlib"]
+	path = python-bitcoinlib
+	url = https://github.com/petertodd/python-bitcoinlib.git
