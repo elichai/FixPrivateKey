@@ -10,7 +10,6 @@ import sys
 
 possible = string.lowercase + string.uppercase + '123456789'
 possible = possible.translate(None, 'OIl')
-result = []
 chk = False
 
 
@@ -89,8 +88,8 @@ def change_letter(address, letters=1, start=1):
                                 " do you want to try generate the last one?"):
                 return "Canceled by user"
 
-    elif not 50 >= len(address) >= 52:
-        logging.info("the address is " + len(address) + " bytes long")
+    elif len(address) >= 52 or len(address) <= 50:
+        logging.info("the address is " + str(len(address)) + " bytes long")
         return 'The address is too long\short'
 
     else:  # Not compressed key - supposed to be 51 bytes.
@@ -112,7 +111,7 @@ def change_letter(address, letters=1, start=1):
     if check(address):
         logging.info("The address was 100% right")
         return address
-
+    result = []
     for i in range(start, len(address_list)):
         for c in possible:
             address_temp = list(address_list)
