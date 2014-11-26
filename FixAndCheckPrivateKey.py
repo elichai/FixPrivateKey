@@ -26,25 +26,25 @@ def query_yes_no(question, true='yes', false='no'):
                   "' (or '" + true[0] + "' or '" + false[0] + "').\n"
 
 
-def swap_letters(address):
-    address_list = list(address)
-    for i in range(1, len(address_list) - 1):
-        address_tmp = list(address_list)
-        tmp = address_tmp[i + 1]
-        address_tmp[i + 1] = address_tmp[i]
-        address_tmp[i] = tmp
-        logging.debug("Swap test: " + "".join(address_tmp))
-        if check("".join(address_tmp)):
-            return "".join(address_tmp)
+def swap_letters(privkey):
+    privkey_list = list(privkey)
+    for i in range(1, len(privkey_list) - 1):
+        privkey_tmp = list(privkey_list)
+        tmp = privkey_tmp[i + 1]
+        privkey_tmp[i + 1] = privkey_tmp[i]
+        privkey_tmp[i] = tmp
+        logging.debug("Swap test: " + "".join(privkey_tmp))
+        if check("".join(privkey_tmp)):
+            return "".join(privkey_tmp)
     return None
 
 
-def check_duplicated_letters(address):
+def check_duplicated_letters(privkey):
     count = 0
     retrn = None
-    address_list = list(address)
-    for i in range(1, len(address_list)):
-        if address_list[i] == address_list[i - 1]:
+    privkey_list = list(privkey)
+    for i in range(1, len(privkey_list)):
+        if privkey_list[i] == privkey_list[i - 1]:
             count += 1
             if count > 1:
                 return None
@@ -62,79 +62,80 @@ def check(key):
     return False
 
 
-def change_letter(address, letters=1, start=1):
+def change_letter(privkey, letters=1, start=1):
     global chk
-    address_list = list(address)
-    if address[0] in ('L', 'K'):  # Compressed Key - supposed to be 52 bytes.
+    privkey_list = list(privkey)
+    if privkey[0] in ('L', 'K'):  # Compressed Key - supposed to be 52 bytes.
         if not chk:
             logging.info("detected Compressed private key")
             chk = True
 
-        if len(address) == 53:
-            indx = check_duplicated_letters(address)
+        if len(privkey) == 53:
+            indx = check_duplicated_letters(privkey)
             if indx is not None:
                 if query_yes_no("Your privkey is 1 char too long, remove duplicated letters"
                                 " or remove last letter?", "repeat", "last"):
-                    address_list.pop(indx)
-                    logging.info("".join(address_list))
+                    privkey_list.pop(indx)
+                    logging.info("".join(privkey_list))
                 else:
                     return "Canceled by user"
             elif not query_yes_no("Your privkey is 1 char too long,"
                                   " do you want to remove the last one?"):
                 return "Canceled by user"
 
-        elif len(address) == 51:
+        elif len(privkey) == 51:
             if not query_yes_no("Your privkey is 1 char short,"
                                 " do you want to try generate the last one?"):
                 return "Canceled by user"
 
-    elif len(address) >= 52 or len(address) <= 50:
-        logging.info("the address is " + str(len(address)) + " bytes long")
-        return 'The address is too long\short'
+    elif len(privkey) >= 52 or len(privkey) <= 50:
+        logging.info("the private key is " + str(len(privkey)) + " bytes long")
+        return 'The private key is too long\short'
 
     else:  # Not compressed key - supposed to be 51 bytes.
-        if len(address) == 52:
+        if len(privkey) == 52:
             if not query_yes_no("Your privkey is 1 char too long,"
                                 " do you want to remove the last one?"):
                 return "Canceled by user"
             else:
-                address_list.pop()
-                logging.info("removed last char, new privkey: " + address)
-        if len(address) == 50:
+                privkey_list.pop()
+                logging.info("removed last char, new privkey: " + privkey)
+        if len(privkey) == 50:
             if not query_yes_no("Your privkey is 1 char short,"
                                 " do you want to try generate the last one?"):
                 return "Canceled by user"
-            address += '1'
+            privkey += '1'
             logging.info("added char to the end(it will try generating it),"
-                         " new privkey: " + address)
+                         " new privkey: " + privkey)
 
-    if check(address):
-        logging.info("The address was 100% right")
-        return address
+    if check(privkey):
+        logging.info("The Private Key was 100% right")
+        return privkey
+    
     result = []
-    for i in range(start, len(address_list)):
+    for i in range(start, len(privkey_list)):
         for c in possible:
-            address_temp = list(address_list)
-            address_temp[i] = c
-            address_end = "".join(address_temp)
-            logging.debug("Checking this address: " + address_end)
-            if check(address_end):
+            privkey_temp = list(privkey_list)
+            privkey_temp[i] = c
+            privkey_end = "".join(privkey_temp)
+            logging.debug("Checking this privkey: " + privkey_end)
+            if check(privkey_end):
                 if args.results == 1:
-                    return address_end
-                result.append(address_end)
-                print '\n' + address_end
+                    return privkey_end
+                result.append(privkey_end)
+                print '\n' + privkey_end
                 args.results -= 1
             if letters > 1:
-                if 53 > len(change_letter(address_end, letters - 1, start + 1)) > 50:
-                    return address_end
+                if 53 > len(change_letter(privkey_end, letters - 1, start + 1)) > 50:
+                    return privkey_end
     if not result:
         return '\nCouldn\'t find any result'
     return result
 
 parser = argparse.ArgumentParser(description="Replace every letter in the private key and check if it's right"
                                              ". supports WIF private key only")
-parser.add_argument('address', type=str,
-                    help='The WIF address')
+parser.add_argument('privkey', type=str,
+                    help='The WIF privkey')
 parser.add_argument('-l', '--letters', action='store', type=int,
                     default=1,
                     dest='letters',
@@ -158,8 +159,8 @@ elif args.verbose >= 2:
     logging.basicConfig(level=logging.DEBUG)
 
 if args.swap:
-    result = swap_letters(args.address)
+    result = swap_letters(args.privkey)
     if result is not None:
         print result
         sys.exit(0)
-print change_letter(args.address, args.letters, 1)
+print change_letter(args.privkey, args.letters, 1)
