@@ -35,7 +35,7 @@ def check_length(privkey_list, input_func=raw_input):
         if type(privkey_list) is str:
             privkey_list = list(privkey_list)
         else:
-            raise ValueError("This function accept list not: " + type(privkey_list))
+            raise ValueError("This function accept list and string only. not: " + str(privkey_list).__name__)
 
     comp = 0  # Sign if privkey is compressed.
     if privkey_list[0] in ('L', 'K'):  # Compressed Key - suppose to be 52 bytes. Uncompressed Key - suppose to be 51 bytes.
@@ -53,7 +53,8 @@ def check_length(privkey_list, input_func=raw_input):
                 logging.info("Removed last char, new privkey:" + "".join(privkey_list))
         elif not query_yes_no(input_func, "Your privkey is 1 char too long,"
                               " do you want to remove the last one?"):
-            return "Canceled by user"
+            print "Canceled by user"
+            sys.exit(0)
         else:
             privkey_list.pop()
             logging.info("Removed last char, new privkey:" + "".join(privkey_list))
@@ -61,14 +62,16 @@ def check_length(privkey_list, input_func=raw_input):
     elif len(privkey_list) == (50 + comp):  # if it's compressed key(comp=1) so it'll be 51, 1 byte above normal.
         if not query_yes_no(input_func, "Your privkey is 1 char short,"
                             " do you want to try generate the last one?"):
-            return "Canceled by user"
+            print "Canceled by user"
+            sys.exit(0)
         privkey_list.append('1')
         logging.info("added char to the end(it will try generating it),"
                      " new privkey: " + ("".join(privkey_list)))
 
     elif len(privkey_list) > (52 + comp) or len(privkey_list) < (50 + comp):
         logging.info("the private key is " + str(len(privkey_list)) + " bytes long")
-        return 'The private key is too long\short'
+        print 'The private key is too long\short'
+        sys.exit(0)
     return privkey_list
 
 
@@ -118,7 +121,7 @@ def change_letter(privkey_list, letters=1, results=1, start=1):
         if type(privkey_list) is str:
             privkey_list = list(privkey_list)
         else:
-            raise ValueError("This function accept list not: " + type(privkey_list))
+            raise ValueError("This function accept list and string only, not: " + type(privkey_list).__name__)
 
     if check("".join(privkey_list)):
         logging.info("The Private Key was 100% right")
@@ -148,7 +151,7 @@ def change_letter(privkey_list, letters=1, results=1, start=1):
     return result
 
 
-if __name__ == '__main__':
+def main():
     parser = argparse.ArgumentParser(description="Replace every letter in the private key and check if it's right"
                                                  ". supports WIF private key only")
     parser.add_argument('privkey', type=str,
@@ -181,3 +184,6 @@ if __name__ == '__main__':
             print result
             sys.exit(0)
     print change_letter(check_length(list(args.privkey)), args.letters, args.results)
+
+if __name__ == '__main__':
+    main()
