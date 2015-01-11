@@ -2,7 +2,7 @@ FixPrivateKey
 =============
 
 This tool is used to replace every single character in a WIF private key, and then check if the checksum is correct.
-To use this tool you must install Petter Todd's `python-bitcoinlib` library.
+To use this tool you must install Peter Todd's `python-bitcoinlib` library.
 Usage
 ----------------
 ```
