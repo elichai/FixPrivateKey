@@ -6,7 +6,7 @@ To use this tool you must install Peter Todd's `python-bitcoinlib` library.
 Usage
 ----------------
 ```
-$ python FixAndCheckPrivateKey.py <address>
+$ python FixPrivateKey.py <address>
 ```
 You can add `--letters LETTERS` option to try replacing more than 1 letter.
 And you can add `--results RESULTS` option to stop trying after more than 1 letter.
@@ -14,6 +14,5 @@ Install Peter Todd's library
 ----------------
 ```
 sudo apt-get install libssl-dev
-python setup.py build
-python setup.py install
+sudo pip install python-bitcoinlib
 ```
