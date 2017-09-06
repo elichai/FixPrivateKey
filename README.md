@@ -22,6 +22,5 @@ Install Peter Todd's library
 ----------------
 ```
 sudo apt-get install libssl-dev
-python setup.py build
-python setup.py install
+sudo pip install python-bitcoinlib
 ```
